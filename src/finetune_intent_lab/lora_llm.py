@@ -20,7 +20,7 @@ from trl import SFTConfig, SFTTrainer
 from finetune_intent_lab import data, metrics
 
 BASE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
-ADAPTER_DIR = Path("outputs/qwen2.5-1.5b-banking77-lora")
+ADAPTER_DIR = Path("adapter/qwen2.5-1.5b-banking77-lora")
 INSTRUCTION = "Classify this online-banking customer query into its intent label. Reply with the label only."
 
 

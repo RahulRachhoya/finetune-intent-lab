@@ -21,7 +21,9 @@ Full official test set (3,076 queries), except Claude, which was scored on a fix
 | Claude Haiku 4.5, same prompt (Bedrock) | - | - | 989 ms | $2.10 | 83.7% |
 
 QLoRA training: 18.5M trainable parameters (~1.2% of the model), 2 epochs, 18 minutes and
-2.1 GB peak VRAM on a laptop RTX 5050 (8 GB).
+2.1 GB peak VRAM on a laptop RTX 5050 (8 GB). The trained adapter is included in
+[`adapter/`](adapter/qwen2.5-1.5b-banking77-lora) (37 MB, via Git LFS) with its own model card,
+so you can reproduce the 93.4% without retraining.
 
 ### What the numbers say
 
@@ -70,11 +72,14 @@ src/finetune_intent_lab/
   baseline_torch.py    EmbeddingBag classifier with a hand-written training loop
   lora_llm.py          zero-shot eval, QLoRA training and adapter eval for Qwen2.5-1.5B-Instruct
   claude_prompt.py     prompted Claude baseline on Amazon Bedrock, with prompt caching + cost tracking
+adapter/qwen2.5-1.5b-banking77-lora/
+                       trained LoRA adapter + tokenizer + model card (Git LFS)
 ```
 
 ## Requirements
 
 - [uv](https://docs.astral.sh/uv/) (it installs Python 3.12 and all dependencies from `uv.lock`)
+- [Git LFS](https://git-lfs.com/) to download the adapter weights (`git lfs install` once, before cloning)
 - An NVIDIA GPU with ~4 GB free VRAM for the LLM steps (tested on an RTX 5050 Laptop, 8 GB,
   Windows 10). The PyTorch wheels are CUDA 12.8 builds, which also cover Blackwell (sm_120) GPUs.
   The scikit-learn and PyTorch baselines run on CPU.
@@ -89,8 +94,8 @@ uv sync                                               # Python 3.12, PyTorch CUD
 uv run python -m finetune_intent_lab.baseline_sklearn
 uv run python -m finetune_intent_lab.baseline_torch
 uv run python -m finetune_intent_lab.lora_llm zero-shot
-uv run python -m finetune_intent_lab.lora_llm train    # saves adapter to outputs/
-uv run python -m finetune_intent_lab.lora_llm eval     # re-evaluate the saved adapter
+uv run python -m finetune_intent_lab.lora_llm eval     # evaluate the included adapter (no training)
+uv run python -m finetune_intent_lab.lora_llm train    # retrain (~18 min); overwrites adapter/
 # needs AWS credentials with Bedrock access (AWS_PROFILE / AWS_REGION); costs ~$1 per model
 uv run python -m finetune_intent_lab.claude_prompt --model claude-opus-5 --limit 300
 uv run mlflow ui --backend-store-uri sqlite:///mlflow.db
