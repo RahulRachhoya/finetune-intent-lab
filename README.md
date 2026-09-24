@@ -8,6 +8,11 @@ tracking every run in MLflow.
 
 ## Results
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/accuracy-dark.png">
+  <img alt="Bar chart of test accuracy: QLoRA 93.4%, logistic regression 91.1%, EmbeddingBag 90.0%, Claude Opus 5 and Haiku 4.5 83.7%, zero-shot 36.9%" src="docs/charts/accuracy-light.png" width="720">
+</picture>
+
 Full official test set (3,076 queries), except Claude, which was scored on a fixed random
 300-query subset to limit API spend. The last column rescores every model on that same subset.
 
@@ -24,6 +29,21 @@ QLoRA training: 18.5M trainable parameters (~1.2% of the model), 2 epochs, 18 mi
 2.1 GB peak VRAM on a laptop RTX 5050 (8 GB). The trained adapter is included in
 [`adapter/`](adapter/qwen2.5-1.5b-banking77-lora) (37 MB, via Git LFS) with its own model card,
 so you can reproduce the 93.4% without retraining.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/tradeoff-dark.png">
+  <img alt="Scatter of accuracy against per-query latency on a log scale; QLoRA is highest, classic ML fastest, Claude slowest" src="docs/charts/tradeoff-light.png" width="720">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/before-after-dark.png">
+  <img alt="Zero-shot vs QLoRA: accuracy 36.9% to 93.4%, invalid outputs 6.5% to 0.1%" src="docs/charts/before-after-light.png" width="720">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/charts/training-loss-dark.png">
+  <img alt="QLoRA training loss falling from 2.6 to 0.014 over 1,124 steps; validation loss 0.069 after epoch 1 and 0.045 after epoch 2" src="docs/charts/training-loss-light.png" width="720">
+</picture>
 
 ### What the numbers say
 
@@ -72,6 +92,7 @@ src/finetune_intent_lab/
   baseline_torch.py    EmbeddingBag classifier with a hand-written training loop
   lora_llm.py          zero-shot eval, QLoRA training and adapter eval for Qwen2.5-1.5B-Instruct
   claude_prompt.py     prompted Claude baseline on Amazon Bedrock, with prompt caching + cost tracking
+  charts.py            README charts: MLflow -> docs/results.json -> docs/charts/*.png
 adapter/qwen2.5-1.5b-banking77-lora/
                        trained LoRA adapter + tokenizer + model card (Git LFS)
 ```
@@ -99,6 +120,8 @@ uv run python -m finetune_intent_lab.lora_llm train    # retrain (~18 min); over
 # needs AWS credentials with Bedrock access (AWS_PROFILE / AWS_REGION); costs ~$1 per model
 uv run python -m finetune_intent_lab.claude_prompt --model claude-opus-5 --limit 300
 uv run mlflow ui --backend-store-uri sqlite:///mlflow.db
+uv run python -m finetune_intent_lab.charts export  # after new runs: refresh docs/results.json
+uv run python -m finetune_intent_lab.charts render  # redraw the README charts
 ```
 
 ## License
